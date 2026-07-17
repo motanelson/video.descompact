@@ -3,12 +3,12 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import copy
 import zlib
-
+import io
 #----------------------------------------
 
 class VideoPlayer:
 
-    def __init__(self, root, directory):
+    def __init__(self, root, directory,images):
 
         self.root = root
         self.directory = directory
@@ -21,20 +21,9 @@ class VideoPlayer:
         self.label.pack(fill="both",expand=True)
 
         # procura todos os ficheiros .bmp
-        self.files = []
-
-        for f in os.listdir(directory):
-            if f.lower().endswith(".bmp"):
-                self.files.append(f)
-
-        # ordena 0.bmp,1.bmp,2.bmp,...
-        try:
-            self.files.sort(
-                key=lambda x:int(
-                x.replace(".bmp",""))
-                )
-        except:
-            self.files.sort()
+        
+        self.images=images
+        
 
         self.counter = 0
 
@@ -44,33 +33,29 @@ class VideoPlayer:
     #---------------------------------
 
     def play(self):
-
-        if len(self.files)==0:
-            self.root.after(250,self.play)
+        if len(self.images)==0:
             return
 
-        if self.counter>=len(self.files):
-            self.counter=0
-
-        filename=os.path.join(
-                    self.directory,
-                    self.files[self.counter]
-                    )
+        if self.counter>=len(self.images):
+             self.counter=0
+        
 
         try:
 
-            image=Image.open(filename)
+          
+            image=self.images[self.counter]
 
-            # adapta ao tamanho da janela
             image=image.resize(
                 (self.root.winfo_width(),
                  self.root.winfo_height())
                  )
 
-            self.photo=ImageTk.PhotoImage(image)
+            self.photo=ImageTk.PhotoImage(
+                    image)
 
             self.label.configure(
-                image=self.photo)
+                    image=self.photo)
+
 
         except:
             pass
@@ -108,13 +93,20 @@ except:
 os.system("chmod 777 "+names)
 
 counter=0
+images=[]
 for d in ff:
-    if  counter>1 and d.strip()!="":
+    if  counter>2 and d.strip()!="":
         ff1=d.split(b"\x01\x00\x05\x04\x03\x02")
-        ff1[0]=ff1[0].decode()  
-        f1=open(names+"/"+ff1[0],"bw")
-        f1.write(zlib.decompress(ff1[1]))
-        f1.close()
+          
+        
+        
+        bmp=zlib.decompress(ff1[1])
+        
+        image=Image.open(io.BytesIO(bmp))
+
+        
+
+        images.append(image)
     counter=counter+1
 
 counter=0
@@ -125,7 +117,7 @@ directory=names
 
 root=tk.Tk()
 
-app=VideoPlayer(root,directory)
+app=VideoPlayer(root,directory,images)
 
 root.mainloop()
 
