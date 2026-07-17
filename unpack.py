@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import copy
 import zlib
 import io
+from tkinter import filedialog
 #----------------------------------------
 
 class VideoPlayer:
@@ -71,8 +72,9 @@ class VideoPlayer:
 
 
 print("\033c\033[47;30m\ngive me the .video pack file ? \n")
-a=input().strip()
-f1=open(a,"rb")
+#a=input().strip()
+a=filedialog.askopenfile(title="give me the .video pack file ?",defaultextension="*.video")
+f1=open(a.name,"rb")
 f=f1.read()
 f1.close()
 ff=f.split(b"\x01\x00\x05\x04\x03\x07")
